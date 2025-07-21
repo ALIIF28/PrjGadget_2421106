@@ -139,6 +139,46 @@ Public Class FJual
         kon.Close()
     End Sub
 
+    Private Sub Label5_Click(sender As Object, e As EventArgs) Handles Label5.Click
+
+    End Sub
+
+    Private Sub Label13_Click(sender As Object, e As EventArgs) Handles Label13.Click
+
+    End Sub
+
+    Private Sub GroupBox1_Enter(sender As Object, e As EventArgs)
+
+    End Sub
+
+    Private Sub dg_CellContentClick(sender As Object, e As DataGridViewCellEventArgs) Handles dg.CellContentClick
+
+    End Sub
+
+    Private Sub cmdcetak_Click(sender As Object, e As EventArgs) Handles cmdcetak.Click
+        Dim crfaktur As New Lapbuku
+        kon.Close()
+        kon.Open()
+        perintah.Connection = kon
+        perintah.CommandType = CommandType.Text
+        perintah.CommandText = "SELECT jualnofaktur, jualtgl, jualpelangganid, " &
+        " pelanggannama, jualprodukid, produknama, kategorinama, merknama, jualimei, " &
+        " jualharga, jualqty, jualuserinput FROM jual_2421106 JOIN pelanggan_2421106 ON jualpelangganid=pelangganid " &
+        " JOIN produk_2421106 ON jualprodukid=produkid JOIN kategori_2421106 ON " &
+        " produkkategoriid=kategoriid JOIN merk_2421106 ON produkmerkid=merkid " &
+        " WHERE jualnofaktur='" & txtjualnofaktur.Text & "'"
+        mda.SelectCommand = perintah
+        ds.Tables.Clear()
+        mda.Fill(ds, "faktur")
+        crfaktur.SetDataSource(ds.Tables("faktur"))
+        Fcetak.crv.ReportSource = crfaktur
+        kon.Close()
+        Fcetak.Show()
+        Fcetak.WindowState = FormWindowState.Maximized
+    End Sub
+
+
+
     Private Sub FJual_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         Call buatkolom()
         totsel = 0
