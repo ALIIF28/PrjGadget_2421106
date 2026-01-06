@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Staf Gudang - RetailSIM</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.0/echarts.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="dark-mode.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-orange: #FF6B35;
+            --secondary-coral: #FF8E53;
+            --accent-gold: #FFB366;
+            --deep-charcoal: #2C3E50;
+            --medium-gray: #7F8C8D;
+            --light-gray: #ECF0F1;
+            --success-green: #27AE60;
+            --warning-amber: #F39C12;
+            --error-red: #E74C3C;
+            --info-blue: #3498DB;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            min-height: 100vh;
+        }
+        
+        .navbar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+        
+        .dashboard-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .dashboard-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+        
+        .inventory-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1rem;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+        
+        .inventory-item {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            border-left: 4px solid var(--primary-orange);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .inventory-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 107, 53, 0.2);
+        }
+        
+        .stock-level {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .stock-high {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .stock-medium {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .stock-low {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .form-input {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 0.75rem;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-orange);
+            box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-orange) 0%, var(--secondary-coral) 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(255, 107, 53, 0.3);
+        }
+        
+        .btn-secondary {
+            background: white;
+            color: var(--primary-orange);
+            border: 2px solid var(--primary-orange);
+            border-radius: 8px;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-secondary:hover {
+            background: var(--primary-orange);
+            color: white;
+        }
+        
+        .timeline-item {
+            position: relative;
+            padding-left: 2rem;
+            margin-bottom: 1rem;
+        }
+        
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0.5rem;
+            width: 12px;
+            height: 12px;
+            background: var(--primary-orange);
+            border-radius: 50%;
+        }
+        
+        .timeline-item::after {
+            content: '';
+            position: absolute;
+            left: 5px;
+            top: 1.25rem;
+            width: 2px;
+            height: calc(100% + 0.5rem);
+            background: #e9ecef;
+        }
+        
+        .timeline-item:last-child::after {
+            display: none;
+        }
+        
+        .barcode-canvas {
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            background: white;
+        }
+        
+        .role-badge {
+            background: linear-gradient(135deg, var(--primary-orange) 0%, var(--secondary-coral) 100%);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+        
+        .modal-overlay {
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            max-width: 500px;
+            margin: 2rem;
+            padding: 2rem;
+        }
+        
+        @media (max-width: 768px) {
+            .inventory-grid {
+                grid-template-columns: 1fr;
+                max-height: 60vh;
+            }
+            
+            .dashboard-card {
+                margin: 1rem;
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar fixed top-0 left-0 right-0 z-50 px-6 py-4">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <a href="index.html" class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center">
+                        <span class="text-white font-bold text-lg">SI</span>
+                    </div>
+                    <span class="text-xl font-semibold text-gray-800">RetailSIM</span>
+                </a>
+            </div>
+            
+            <div class="flex items-center space-x-6">
+                <div class="role-badge">Staf Gudang</div>
+                <div class="text-sm text-gray-600">
+                    <span class="font-medium">Rafli</span>
+                    <div class="text-xs">Aktif</div>
+                </div>
+                <button class="dark-mode-toggle" onclick="toggleDarkMode()" id="dark-mode-toggle">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" id="toggle-icon">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                    </svg>
+                </button>
+                <a href="index.html" class="text-gray-600 hover:text-orange-500 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="pt-24 px-6 pb-6">
+        <div class="max-w-7xl mx-auto">
+            <!-- Header -->
+            <div class="mb-8">
+                <h1 class="text-3xl font-bold text-gray-800 mb-2">Dashboard Staf Gudang</h1>
+                <p class="text-gray-600">Modul Stock Entry untuk pencatatan penerimaan dan pengeluaran stok</p>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div class="dashboard-card p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-600">Total Produk</p>
+                            <p class="text-2xl font-bold text-gray-800" id="total-products">0</p>
+                        </div>
+                        <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                            <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-card p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-600">Stok Aman</p>
+                            <p class="text-2xl font-bold text-green-600" id="safe-stock">0</p>
+                        </div>
+                        <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-card p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-600">Stok Rendah</p>
+                            <p class="text-2xl font-bold text-yellow-600" id="low-stock">0</p>
+                        </div>
+                        <div class="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center">
+                            <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-card p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-600">Habis Stok</p>
+                            <p class="text-2xl font-bold text-red-600" id="out-of-stock">0</p>
+                        </div>
+                        <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                            <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Inventory Management -->
+                <div class="lg:col-span-2">
+                    <div class="dashboard-card p-6 mb-8">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-xl font-semibold text-gray-800">Daftar Inventori</h3>
+                            <div class="flex space-x-2">
+                                <input type="text" id="inventory-search" class="form-input w-64" placeholder="Cari produk...">
+                                <button class="btn-secondary" onclick="filterInventory()">Filter</button>
+                            </div>
+                        </div>
+
+                        <div id="inventory-grid" class="inventory-grid">
+                            <!-- Inventory items will be loaded here -->
+                        </div>
+                    </div>
+
+                    <!-- Stock Movement Chart -->
+                    <div class="dashboard-card p-6">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-6">Grafik Pergerakan Stok</h3>
+                        <div id="stock-chart" style="height: 300px;"></div>
+                    </div>
+                </div>
+
+                <!-- Stock Entry Form -->
+                <div class="lg:col-span-1">
+                    <div class="dashboard-card p-6 sticky top-28">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-6">Form Pencatatan Stok</h3>
+                        
+                        <form id="stock-form" class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Produk</label>
+                                <select id="product-select" class="form-input" required>
+                                    <option value="">Pilih Produk</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Jenis Transaksi</label>
+                                <select id="transaction-type" class="form-input" required>
+                                    <option value="">Pilih Jenis</option>
+                                    <option value="in">Penerimaan Stok</option>
+                                    <option value="out">Pengeluaran Stok</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Jumlah</label>
+                                <input type="number" id="quantity" class="form-input" min="1" required placeholder="Masukkan jumlah">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Catatan</label>
+                                <textarea id="notes" class="form-input" rows="3" placeholder="Catatan tambahan (opsional)"></textarea>
+                            </div>
+
+                            <button type="submit" class="btn-primary w-full">Simpan Transaksi</button>
+                        </form>
+
+                        <!-- Quick Actions -->
+                        <div class="mt-8 space-y-3">
+                            <button class="btn-secondary w-full" onclick="showBarcodeGenerator()">
+                                Generate Barcode
+                            </button>
+                            <button class="btn-secondary w-full" onclick="exportStockReport()">
+                                Export Laporan Stok
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stock History Timeline -->
+            <div class="dashboard-card p-6 mt-8">
+                <h3 class="text-xl font-semibold text-gray-800 mb-6">Riwayat Pergerakan Stok</h3>
+                <div id="stock-timeline" class="max-h-96 overflow-y-auto">
+                    <!-- Timeline items will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Barcode Generator Modal -->
+    <div id="barcode-modal" class="modal-overlay fixed inset-0 z-50 hidden flex items-center justify-center">
+        <div class="modal-content">
+            <h3 class="text-xl font-semibold text-gray-800 mb-6">Generator Barcode</h3>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Nama Produk</label>
+                    <input type="text" id="barcode-product-name" class="form-input" placeholder="Masukkan nama produk">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Kode Barcode</label>
+                    <div class="flex space-x-2">
+                        <input type="text" id="barcode-value" class="form-input flex-1" readonly>
+                        <button class="btn-secondary" onclick="generateBarcode()">Generate</button>
+                    </div>
+                </div>
+                
+                <div class="text-center">
+                    <canvas id="barcode-canvas" class="barcode-canvas mx-auto"></canvas>
+                </div>
+            </div>
+            
+            <div class="flex gap-4 mt-6">
+                <button class="btn-secondary flex-1" onclick="closeBarcodeGenerator()">Tutup</button>
+                <button class="btn-primary flex-1" onclick="printBarcode()">Cetak Barcode</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Gudang Dashboard JavaScript
+        let inventory = [];
+        let stockHistory = [];
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            loadInventory();
+            loadStockHistory();
+            initializeStockChart();
+            initializeForm();
+            updateStats();
+        });
+
+        // Load inventory data
+        function loadInventory() {
+            inventory = [
+                { id: 1, name: 'Indomie Goreng', stock: 150, minStock: 20, maxStock: 200, barcode: '1234567890', lastUpdated: '2025-01-15' },
+                { id: 2, name: 'Teh Botol Sosro', stock: 200, minStock: 30, maxStock: 250, barcode: '2345678901', lastUpdated: '2025-01-15' },
+                { id: 3, name: 'Sabun Lifebuoy', stock: 15, minStock: 25, maxStock: 100, barcode: '3456789012', lastUpdated: '2025-01-14' },
+                { id: 4, name: 'Shampoo Sunsilk', stock: 60, minStock: 20, maxStock: 80, barcode: '4567890123', lastUpdated: '2025-01-15' },
+                { id: 5, name: 'Beras 5kg', stock: 40, minStock: 15, maxStock: 60, barcode: '5678901234', lastUpdated: '2025-01-15' },
+                { id: 6, name: 'Minyak Goreng 1L', stock: 5, minStock: 20, maxStock: 100, barcode: '6789012345', lastUpdated: '2025-01-13' },
+                { id: 7, name: 'Gula 1kg', stock: 120, minStock: 30, maxStock: 150, barcode: '7890123456', lastUpdated: '2025-01-15' },
+                { id: 8, name: 'Roti Tawar', stock: 8, minStock: 15, maxStock: 50, barcode: '8901234567', lastUpdated: '2025-01-14' },
+                { id: 9, name: 'Susu UHT', stock: 100, minStock: 25, maxStock: 120, barcode: '9012345678', lastUpdated: '2025-01-15' },
+                { id: 10, name: 'Detergen Rinso', stock: 50, minStock: 20, maxStock: 80, barcode: '0123456789', lastUpdated: '2025-01-15' }
+            ];
+
+            renderInventory(inventory);
+            populateProductSelect();
+        }
+
+        // Render inventory
+        function renderInventory(items) {
+            const grid = document.getElementById('inventory-grid');
+            grid.innerHTML = '';
+
+            items.forEach(item => {
+                const stockLevel = getStockLevel(item.stock, item.minStock);
+                const inventoryItem = document.createElement('div');
+                inventoryItem.className = 'inventory-item';
+
+                inventoryItem.innerHTML = `
+                    <div class="flex justify-between items-start mb-3">
+                        <h4 class="font-semibold text-gray-800">${item.name}</h4>
+                        <span class="stock-level ${stockLevel.class}">${stockLevel.label}</span>
+                    </div>
+                    
+                    <div class="space-y-2">
+                        <div class="flex justify-between">
+                            <span class="text-sm text-gray-600">Stok Saat Ini:</span>
+                            <span class="font-medium ${item.stock === 0 ? 'text-red-600' : ''}">${item.stock} unit</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-sm text-gray-600">Stok Minimal:</span>
+                            <span class="text-sm">${item.minStock} unit</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-sm text-gray-600">Barcode:</span>
+                            <span class="text-sm font-mono">${item.barcode}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-sm text-gray-600">Terakhir Update:</span>
+                            <span class="text-sm">${item.lastUpdated}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 flex space-x-2">
+                        <button class="btn-secondary flex-1 text-sm py-2" onclick="quickStockIn(${item.id})">
+                            Stok Masuk
+                        </button>
+                        <button class="btn-secondary flex-1 text-sm py-2" onclick="quickStockOut(${item.id})">
+                            Stok Keluar
+                        </button>
+                    </div>
+                `;
+
+                grid.appendChild(inventoryItem);
+            });
+        }
+
+        // Get stock level indicator
+        function getStockLevel(stock, minStock) {
+            if (stock === 0) {
+                return { class: 'stock-low', label: 'Habis' };
+            } else if (stock < minStock) {
+                return { class: 'stock-low', label: 'Rendah' };
+            } else if (stock < minStock * 1.5) {
+                return { class: 'stock-medium', label: 'Menengah' };
+            } else {
+                return { class: 'stock-high', label: 'Aman' };
+            }
+        }
+
+        // Update statistics
+        function updateStats() {
+            const totalProducts = inventory.length;
+            const safeStock = inventory.filter(item => item.stock >= item.minStock * 1.5).length;
+            const lowStock = inventory.filter(item => item.stock < item.minStock && item.stock > 0).length;
+            const outOfStock = inventory.filter(item => item.stock === 0).length;
+
+            document.getElementById('total-products').textContent = totalProducts;
+            document.getElementById('safe-stock').textContent = safeStock;
+            document.getElementById('low-stock').textContent = lowStock;
+            document.getElementById('out-of-stock').textContent = outOfStock;
+        }
+
+        // Populate product select
+        function populateProductSelect() {
+            const select = document.getElementById('product-select');
+            select.innerHTML = '<option value="">Pilih Produk</option>';
+            
+            inventory.forEach(item => {
+                const option = document.createElement('option');
+                option.value = item.id;
+                option.textContent = `${item.name} (Stok: ${item.stock})`;
+                select.appendChild(option);
+            });
+        }
+
+        // Initialize form
+        function initializeForm() {
+            const form = document.getElementById('stock-form');
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const productId = parseInt(document.getElementById('product-select').value);
+                const transactionType = document.getElementById('transaction-type').value;
+                const quantity = parseInt(document.getElementById('quantity').value);
+                const notes = document.getElementById('notes').value;
+                
+                if (!productId || !transactionType || !quantity) {
+                    showNotification('Mohon lengkapi semua field yang wajib!', 'warning');
+                    return;
+                }
+                
+                processStockTransaction(productId, transactionType, quantity, notes);
+            });
+        }
+
+        // Process stock transaction
+        function processStockTransaction(productId, type, quantity, notes) {
+            const product = inventory.find(p => p.id === productId);
+            if (!product) return;
+
+            if (type === 'out' && product.stock < quantity) {
+                showNotification('Stok tidak mencukupi untuk pengeluaran!', 'error');
+                return;
+            }
+
+            // Update stock
+            if (type === 'in') {
+                product.stock += quantity;
+            } else {
+                product.stock -= quantity;
+            }
+
+            // Update last updated
+            product.lastUpdated = new Date().toISOString().split('T')[0];
+
+            // Add to history
+            const historyEntry = {
+                id: Date.now(),
+                productName: product.name,
+                type: type,
+                quantity: quantity,
+                date: new Date().toISOString().split('T')[0],
+                time: new Date().toLocaleTimeString('id-ID'),
+                staff: 'Citra',
+                notes: notes,
+                newStock: product.stock
+            };
+
+            stockHistory.unshift(historyEntry);
+
+            // Refresh UI
+            renderInventory(inventory);
+            updateStats();
+            loadStockHistory();
+            updateStockChart();
+
+            // Reset form
+            document.getElementById('stock-form').reset();
+
+            showNotification(
+                `Transaksi ${type === 'in' ? 'penerimaan' : 'pengeluaran'} stok berhasil disimpan!`,
+                'success'
+            );
+
+            // Animation
+            anime({
+                targets: '.inventory-item',
+                scale: [1, 1.02, 1],
+                duration: 300,
+                delay: anime.stagger(50)
+            });
+        }
+
+        // Quick stock in
+        function quickStockIn(productId) {
+            const quantity = prompt('Masukkan jumlah stok masuk:');
+            if (quantity && !isNaN(quantity) && quantity > 0) {
+                processStockTransaction(productId, 'in', parseInt(quantity), 'Quick stock in');
+            }
+        }
+
+        // Quick stock out
+        function quickStockOut(productId) {
+            const quantity = prompt('Masukkan jumlah stok keluar:');
+            if (quantity && !isNaN(quantity) && quantity > 0) {
+                processStockTransaction(productId, 'out', parseInt(quantity), 'Quick stock out');
+            }
+        }
+
+        // Load stock history
+        function loadStockHistory() {
+            const timeline = document.getElementById('stock-timeline');
+            
+            if (stockHistory.length === 0) {
+                timeline.innerHTML = `
+                    <div class="text-center text-gray-500 py-8">
+                        <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <p>Belum ada riwayat pergerakan stok</p>
+                    </div>
+                `;
+                return;
+            }
+
+            timeline.innerHTML = stockHistory.slice(0, 20).map(entry => `
+                <div class="timeline-item">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h4 class="font-semibold text-gray-800">${entry.productName}</h4>
+                            <p class="text-sm text-gray-600">
+                                ${entry.type === 'in' ? 'Penerimaan' : 'Pengeluaran'} stok: ${entry.quantity} unit
+                            </p>
+                            <p class="text-xs text-gray-500">${entry.notes || 'Tidak ada catatan'}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-sm font-medium text-gray-800">${entry.date}</p>
+                            <p class="text-xs text-gray-500">${entry.time}</p>
+                            <p class="text-xs text-gray-500">Stok: ${entry.newStock}</p>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Initialize stock chart
+        function initializeStockChart() {
+            const chartDom = document.getElementById('stock-chart');
+            const myChart = echarts.init(chartDom);
+
+            updateStockChart();
+        }
+
+        // Update stock chart
+        function updateStockChart() {
+            const chartDom = document.getElementById('stock-chart');
+            const myChart = echarts.getInstanceByDom(chartDom) || echarts.init(chartDom);
+
+            // Mock data for the last 7 days
+            const dates = [];
+            const stockIn = [];
+            const stockOut = [];
+
+            for (let i = 6; i >= 0; i--) {
+                const date = new Date();
+                date.setDate(date.getDate() - i);
+                dates.push(date.toISOString().split('T')[0]);
+                stockIn.push(Math.floor(Math.random() * 100) + 50);
+                stockOut.push(Math.floor(Math.random() * 80) + 30);
+            }
+
+            const option = {
+                title: {
+                    text: 'Pergerakan Stok 7 Hari Terakhir',
+                    left: 'center',
+                    textStyle: {
+                        fontSize: 14,
+                        fontWeight: 'normal'
+                    }
+                },
+                tooltip: {
+                    trigger: 'axis'
+                },
+                legend: {
+                    data: ['Stok Masuk', 'Stok Keluar'],
+                    bottom: 0
+                },
+                xAxis: {
+                    type: 'category',
+                    data: dates
+                },
+                yAxis: {
+                    type: 'value'
+                },
+                series: [
+                    {
+                        name: 'Stok Masuk',
+                        type: 'bar',
+                        data: stockIn,
+                        itemStyle: {
+                            color: '#27AE60'
+                        }
+                    },
+                    {
+                        name: 'Stok Keluar',
+                        type: 'bar',
+                        data: stockOut,
+                        itemStyle: {
+                            color: '#E74C3C'
+                        }
+                    }
+                ]
+            };
+
+            myChart.setOption(option);
+        }
+
+        // Filter inventory
+        function filterInventory() {
+            const searchTerm = document.getElementById('inventory-search').value.toLowerCase();
+            const filtered = inventory.filter(item => 
+                item.name.toLowerCase().includes(searchTerm) ||
+                item.barcode.includes(searchTerm)
+            );
+            renderInventory(filtered);
+        }
+
+        // Show barcode generator
+        function showBarcodeGenerator() {
+            const modal = document.getElementById('barcode-modal');
+            modal.classList.remove('hidden');
+            
+            anime({
+                targets: modal.querySelector('.modal-content'),
+                scale: [0.8, 1],
+                opacity: [0, 1],
+                duration: 300,
+                easing: 'easeOutCubic'
+            });
+        }
+
+        // Close barcode generator
+        function closeBarcodeGenerator() {
+            const modal = document.getElementById('barcode-modal');
+            modal.classList.add('hidden');
+        }
+
+        // Generate barcode
+        function generateBarcode() {
+            const productName = document.getElementById('barcode-product-name').value;
+            if (!productName) {
+                showNotification('Masukkan nama produk terlebih dahulu!', 'warning');
+                return;
+            }
+
+            const barcodeValue = 'PRD' + Date.now().toString().slice(-8);
+            document.getElementById('barcode-value').value = barcodeValue;
+
+            // Generate barcode using canvas
+            const canvas = document.getElementById('barcode-canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = 300;
+            canvas.height = 150;
+
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw barcode (simplified)
+            ctx.fillStyle = '#000000';
+            const barWidth = 2;
+            const barHeight = 80;
+            const startX = 50;
+            const startY = 30;
+
+            for (let i = 0; i < barcodeValue.length; i++) {
+                const charCode = barcodeValue.charCodeAt(i);
+                const barWidthMod = (charCode % 3) + 1;
+                
+                if (i % 2 === 0) {
+                    ctx.fillRect(startX + (i * barWidth * 3), startY, barWidth * barWidthMod, barHeight);
+                }
+            }
+
+            // Draw text
+            ctx.fillStyle = '#000000';
+            ctx.font = '14px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText(barcodeValue, canvas.width / 2, startY + barHeight + 20);
+            ctx.fillText(productName, canvas.width / 2, startY + barHeight + 40);
+        }
+
+        // Print barcode
+        function printBarcode() {
+            const canvas = document.getElementById('barcode-canvas');
+            const productName = document.getElementById('barcode-product-name').value;
+            const barcodeValue = document.getElementById('barcode-value').value;
+
+            if (!barcodeValue) {
+                showNotification('Generate barcode terlebih dahulu!', 'warning');
+                return;
+            }
+
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <html>
+                <head>
+                    <title>Barcode - ${productName}</title>
+                </head>
+                <body style="text-align: center; padding: 20px;">
+                    <h3>${productName}</h3>
+                    <img src="${canvas.toDataURL()}" style="max-width: 100%;">
+                    <p style="font-family: monospace; font-size: 12px;">${barcodeValue}</p>
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+            printWindow.print();
+
+            showNotification('Barcode dicetak!', 'success');
+        }
+
+        // Export stock report
+        function exportStockReport() {
+            const reportData = inventory.map(item => ({
+                'Nama Produk': item.name,
+                'Stok Saat Ini': item.stock,
+                'Stok Minimal': item.minStock,
+                'Stok Maksimal': item.maxStock,
+                'Barcode': item.barcode,
+                'Terakhir Update': item.lastUpdated,
+                'Status': item.stock === 0 ? 'Habis' : item.stock < item.minStock ? 'Rendah' : 'Aman'
+            }));
+
+            // Create CSV content
+            const headers = Object.keys(reportData[0]);
+            const csvContent = [
+                headers.join(','),
+                ...reportData.map(row => headers.map(header => `"${row[header]}"`).join(','))
+            ].join('\n');
+
+            // Download CSV
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `laporan-stok-${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            showNotification('Laporan stok berhasil diexport!', 'success');
+        }
+
+        // Utility functions
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg max-w-sm ${
+                type === 'success' ? 'bg-green-500' :
+                type === 'error' ? 'bg-red-500' :
+                type === 'warning' ? 'bg-yellow-500' :
+                'bg-blue-500'
+            } text-white`;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            anime({
+                targets: notification,
+                translateX: [300, 0],
+                opacity: [0, 1],
+                duration: 300,
+                easing: 'easeOutCubic'
+            });
+            
+            setTimeout(() => {
+                anime({
+                    targets: notification,
+                    translateX: 300,
+                    opacity: 0,
+                    duration: 300,
+                    easing: 'easeInCubic',
+                    complete: () => {
+                        document.body.removeChild(notification);
+                    }
+                });
+            

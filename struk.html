@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>Struk Pembayaran - RetailSIM</title>
+  <style>
+    body {
+      font-family: 'Courier New', monospace;
+      margin: 0;
+      padding: 16px;
+      background: #fff;
+      color: #000;
+    }
+    .struk {
+      max-width: 300px;
+      margin: auto;
+      border: 1px dashed #ccc;
+      padding: 12px;
+    }
+    .center {
+      text-align: center;
+    }
+    .right {
+      text-align: right;
+    }
+    .divider {
+      border-top: 1px dashed #000;
+      margin: 8px 0;
+    }
+    .total {
+      font-weight: bold;
+      font-size: 1.1em;
+    }
+    @media print {
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      .no-print {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="struk">
+    <div class="center">
+      <h2>RetailSIM</h2>
+      <p>Sistem Informasi Manajemen Retail</p>
+      <p>Telp: (021) 1234-5678</p>
+    </div>
+
+    <div class="divider"></div>
+
+    <p>ID Transaksi: <span id="trx-id">TRX000000</span></p>
+    <p>Tanggal: <span id="trx-date">-</span></p>
+    <p>Kasir: <span id="cashier">-</span></p>
+
+    <div class="divider"></div>
+
+    <table width="100%" cellpadding="2" cellspacing="0">
+      <thead>
+        <tr>
+          <th align="left">Item</th>
+          <th align="center">Qty</th>
+          <th align="right">Subtotal</th>
+        </tr>
+      </thead>
+      <tbody id="items-body">
+        <!-- Diisi oleh JavaScript -->
+      </tbody>
+    </table>
+
+    <div class="divider"></div>
+
+    <div class="right">
+      <p>Subtotal: <span id="subtotal">Rp 0</span></p>
+      <p>PPN (10%): <span id="tax">Rp 0</span></p>
+      <p class="total">Total: <span id="total">Rp 0</span></p>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="center">
+      <p>Terima kasih atas kunjungan Anda!</p>
+      <p>Struk ini merupakan bukti pembelian yang sah.</p>
+    </div>
+  </div>
+
+  <div class="center no-print" style="margin-top: 20px;">
+    <button onclick="window.print()">Cetak Struk</button>
+    <button onclick="window.close()">Tutup</button>
+  </div>
+
+  <script>
+    // Ambil data dari localStorage (dikirim oleh kasir.html)
+    const receiptData = JSON.parse(localStorage.getItem('receiptData') || '{}');
+
+    if (receiptData.items && receiptData.items.length) {
+      document.getElementById('trx-id').textContent = receiptData.transactionId;
+      document.getElementById('trx-date').textContent = receiptData.date;
+      document.getElementById('cashier').textContent = receiptData.cashier;
+
+      const tbody = document.getElementById('items-body');
+      receiptData.items.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${item.name}</td>
+          <td align="center">${item.quantity}</td>
+          <td align="right">${formatRupiah(item.price * item.quantity)}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      document.getElementById('subtotal').textContent = formatRupiah(receiptData.subtotal);
+      document.getElementById('tax').textContent = formatRupiah(receiptData.tax);
+      document.getElementById('total').textContent = formatRupiah(receiptData.total);
+
+      // Otomatis membuka dialog print
+      window.print();
+    } else {
+      document.body.innerHTML = '<p class="center">Tidak ada data struk.</p>';
+    }
+
+    function formatRupiah(num) {
+      return 'Rp ' + num.toLocaleString('id-ID');
+    }
+  </script>
+</body>
+</html>

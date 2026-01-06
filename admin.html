@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Admin - RetailSIM</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.0/echarts.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="dark-mode.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-orange: #FF6B35;
+            --secondary-coral: #FF8E53;
+            --accent-gold: #FFB366;
+            --deep-charcoal: #2C3E50;
+            --medium-gray: #7F8C8D;
+            --light-gray: #ECF0F1;
+            --success-green: #27AE60;
+            --warning-amber: #F39C12;
+            --error-red: #E74C3C;
+            --info-blue: #3498DB;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            min-height: 100vh;
+        }
+        
+        .navbar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+        
+        .dashboard-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .dashboard-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .data-table th,
+        .data-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .data-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: var(--deep-charcoal);
+        }
+        
+        .data-table tbody tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-completed {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-verified {
+            background: #cce5ff;
+            color: #004085;
+        }
+        
+        .form-input {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 0.75rem;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-orange);
+            box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-orange) 0%, var(--secondary-coral) 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(255, 107, 53, 0.3);
+        }
+        
+        .btn-secondary {
+            background: white;
+            color: var(--primary-orange);
+            border: 2px solid var(--primary-orange);
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.875rem;
+        }
+        
+        .btn-secondary:hover {
+            background: var(--primary-orange);
+            color: white;
+        }
+        
+        .role-badge {
+            background: linear-gradient(135deg, var(--primary-orange) 0%, var(--secondary-coral) 100%);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+        
+        .modal-overlay {
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            max-width: 600px;
+            margin: 2rem;
+            padding: 2rem;
+        }
+        
+        .tab-button {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            background: transparent;
+            color: var(--medium-gray);
+        }
+        
+        .tab-button.active {
+            background: var(--primary-orange);
+            color: white;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .verification-panel {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border-left: 4px solid var(--primary-orange);
+        }
+        
+        .bulk-actions {
+            background: white;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        @media (max-width: 768px) {
+            .data-table {
+                font-size: 0.875rem;
+            }
+            
+            .data-table th,
+            .data-table td {
+                padding: 0.5rem;
+            }
+            
+            .dashboard-card {
+                margin: 1rem;
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar fixed top-0 left-0 right-0 z-50 px-6 py-4">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <a href="index.html" class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center">
+                        <span class="text-white font-bold text-lg">SI</span>
+                    </div>
+                    <span class="text-xl font-semibold text-gray-800">RetailSIM</span>
+                </a>
+            </div>
+            
+            <div class="flex items-center space-x-6">
+                <div class="role-badge">Admin</div>
+                <div class="text-sm text-gray-600">
+                    <span class="font-medium">Okta</span>
+                    <div class="text-xs">Aktif</div>
+                </div>
+                <button class="dark-mode-toggle" onclick="toggleDarkMode()" id="dark-mode-toggle">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" id="toggle-icon">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                    </svg>
+                </button>
+                <a href="index.html" class="text-gray-600 hover:text-orange-500 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="pt-24 px-6 pb-6">
+        <div class="max-w-7xl mx-auto">
+            <!-- Header -->
+            <div class="mb-8">
+                <h1 class="text-3xl font-bold text-gray-800 mb-2">Dashboard Admin</h1>
+                <p class="text-gray-600">Fitur Jurnal Otomatis dan verifikasi transaksi dengan data bersih</p>
+            </div>
+
+            <!-- Tab Navigation -->
+            <div class="flex flex-wrap gap-2 mb-8 bg-white rounded-lg p-2 shadow-sm">
+                <button class="tab-button active" onclick="switchTab('verification')" id="tab-verification">
+                    Verifikasi Transaksi
+                </button>
+                <button class="tab-button" onclick="switchTab('users')" id="tab-users">
+                    Manajemen User
+                </button>
+                <button class="tab-button" onclick="switchTab('logs')" id="tab-logs">
+                    System Logs
+                </button>
+                <button class="tab-button" onclick="switchTab('reports')" id="tab-reports">
+                    Laporan
+                </button>
+            </div>
+
+            <!-- Verification Tab -->
+            <div id="content-verification" class="tab-content active">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Transaction Verification -->
+                    <div class="lg:col-span-2">
+                        <div class="dashboard-card p-6 mb-6">
+                            <div class="flex justify-between items-center mb-6">
+                                <h3 class="text-xl font-semibold text-gray-800">Verifikasi Transaksi Harian</h3>
+                                <div class="flex space-x-2">
+                                    <input type="date" id="verification-date" class="form-input w-40" value="2025-01-15">
+                                    <button class="btn-secondary" onclick="loadTransactions()">Load</button>
+                                </div>
+                            </div>
+
+                            <!-- Bulk Actions -->
+                            <div class="bulk-actions">
+                                <div class="flex flex-wrap gap-2">
+                                    <button class="btn-secondary" onclick="selectAllTransactions()">Pilih Semua</button>
+                                    <button class="btn-secondary" onclick="verifySelected()">Verifikasi Terpilih</button>
+                                    <button class="btn-secondary" onclick="rejectSelected()">Tolak Terpilih</button>
+                                    <button class="btn-secondary" onclick="exportTransactions()">Export Data</button>
+                                </div>
+                            </div>
+
+                            <div class="overflow-x-auto">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th><input type="checkbox" id="select-all" onchange="toggleSelectAll()"></th>
+                                            <th>ID Transaksi</th>
+                                            <th>Tanggal</th>
+                                            <th>Kasir</th>
+                                            <th>Total</th>
+                                            <th>Item</th>
+                                            <th>Status</th>
+                                            <th>Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="transaction-table">
+                                        <!-- Transaction data will be loaded here -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Transaction Summary Chart -->
+                        <div class="dashboard-card p-6">
+                            <h3 class="text-xl font-semibold text-gray-800 mb-6">Ringkasan Transaksi</h3>
+                            <div id="transaction-chart" style="height: 300px;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Verification Panel -->
+                    <div class="lg:col-span-1">
+                        <div class="dashboard-card p-6 sticky top-28">
+                            <div class="verification-panel">
+                                <h4 class="text-lg font-semibold text-gray-800 mb-4">Quick Stats</h4>
+                                
+                                <div class="space-y-4">
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm text-gray-600">Total Transaksi</span>
+                                        <span class="font-semibold text-gray-800" id="total-transactions">0</span>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm text-gray-600">Pending</span>
+                                        <span class="font-semibold text-orange-600" id="pending-transactions">0</span>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm text-gray-600">Terverifikasi</span>
+                                        <span class="font-semibold text-green-600" id="verified-transactions">0</span>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm text-gray-600">Total Nilai</span>
+                                        <span class="font-semibold text-gray-800" id="total-value">Rp 0</span>
+                                    </div>
+                                </div>
+
+                                <div class="mt-6 pt-6 border-t border-gray-300">
+                                    <h5 class="font-semibold text-gray-800 mb-3">Tindakan Cepat</h5>
+                                    <div class="space-y-2">
+                                        <button class="btn-secondary w-full text-sm" onclick="verifyAllTransactions()">
+                                            Verifikasi Semua
+                                        </button>
+                                        <button class="btn-secondary w-full text-sm" onclick="generateReport()">
+                                            Generate Report
+                                        </button>
+                                        <button class="btn-secondary w-full text-sm" onclick="backupData()">
+                                            Backup Data
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Users Tab -->
+            <div id="content-users" class="tab-content">
+                <div class="dashboard-card p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-semibold text-gray-800">Manajemen User</h3>
+                        <button class="btn-primary" onclick="showAddUserModal()">Tambah User</button>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nama</th>
+                                    <th>Role</th>
+                                    <th>Status</th>
+                                    <th>Terakhir Login</th>
+                                    <th>Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="users-table">
+                                <!-- User data will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Logs Tab -->
+            <div id="content-logs" class="tab-content">
+                <div class="dashboard-card p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-semibold text-gray-800">System Logs</h3>
+                        <div class="flex space-x-2">
+                            <select id="log-filter" class="form-input w-32">
+                                <option value="all">Semua</option>
+                                <option value="error">Error</option>
+                                <option value="warning">Warning</option>
+                                <option value="info">Info</option>
+                            </select>
+                            <button class="btn-secondary" onclick="filterLogs()">Filter</button>
+                        </div>
+                    </div>
+
+                    <div id="logs-container" class="max-h-96 overflow-y-auto">
+                        <!-- Logs will be loaded here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reports Tab -->
+            <div id="content-reports" class="tab-content">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div class="dashboard-card p-6">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-6">Generate Laporan</h3>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Jenis Laporan</label>
+                                <select id="report-type" class="form-input">
+                                    <option value="transactions">Laporan Transaksi</option>
+                                    <option value="inventory">Laporan Inventori</option>
+                                    <option value="users">Laporan User</option>
+                                    <option value="financial">Laporan Keuangan</option>
+                                </select>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Tanggal Mulai</label>
+                                    <input type="date" id="report-start-date" class="form-input" value="2025-01-01">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Tanggal Selesai</label>
+                                    <input type="date" id="report-end-date" class="form-input" value="2025-01-15">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Format Export</label>
+                                <select id="report-format" class="form-input">
+                                    <option value="pdf">PDF</option>
+                                    <option value="excel">Excel</option>
+                                    <option value="csv">CSV</option>
+                                </select>
+                            </div>
+
+                            <button class="btn-primary w-full" onclick="generateReport()">Generate Laporan</button>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-card p-6">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-6">Recent Reports</h3>
+                        
+                        <div id="recent-reports" class="space-y-3">
+                            <!-- Recent reports will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add User Modal -->
+    <div id="add-user-modal" class="modal-overlay fixed inset-0 z-50 hidden flex items-center justify-center">
+        <div class="modal-content">
+            <h3 class="text-xl font-semibold text-gray-800 mb-6">Tambah User Baru</h3>
+            
+            <form id="add-user-form" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Nama Lengkap</label>
+                    <input type="text" id="user-name" class="form-input" required>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Username</label>
+                    <input type="text" id="user-username" class="form-input" required>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                    <input type="password" id="user-password" class="form-input" required>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Role</label>
+                    <select id="user-role" class="form-input" required>
+                        <option value="">Pilih Role</option>
+                        <option value="kasir">Kasir</option>
+                        <option value="gudang">Staf Gudang</option>
+                        <option value="admin">Admin</option>
+                        <option value="owner">Owner</option>
+                    </select>
+                </div>
+
+                <div class="flex gap-4 mt-6">
+                    <button type="button" class="btn-secondary flex-1" onclick="closeAddUserModal()">Batal</button>
+                    <button type="submit" class="btn-primary flex-1">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Admin Dashboard JavaScript
+        let transactions = [];
+        let users = [];
+        let logs = [];
+        let selectedTransactions = [];
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            loadTransactions();
+            loadUsers();
+            loadLogs();
+            loadTransactionChart();
+            initializeForm();
+        });
+
+        // Tab switching
+        function switchTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+
+            // Remove active class from all tab buttons
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('active');
+            });
+
+            // Show selected tab content
+            document.getElementById(`content-${tabName}`).classList.add('active');
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+        }
+
+        // Load transactions
+        function loadTransactions() {
+            transactions = [
+                { id: 'TRX001', date: '2025-01-15', cashier: 'Ali', total: 85000, items: 5, status: 'completed' },
+                { id: 'TRX002', date: '2025-01-15', cashier: 'Budi', total: 120000, items: 8, status: 'pending' },
+                { id: 'TRX003', date: '2025-01-15', cashier: 'Citra', total: 45000, items: 3, status: 'pending' },
+                { id: 'TRX004', date: '2025-01-14', cashier: 'Ali', total: 200000, items: 12, status: 'completed' },
+                { id: 'TRX005', date: '2025-01-14', cashier: 'Budi', total: 75000, items: 4, status: 'verified' },
+                { id: 'TRX006', date: '2025-01-14', cashier: 'Ali', total: 95000, items: 6, status: 'pending' },
+                { id: 'TRX007', date: '2025-01-13', cashier: 'Citra', total: 150000, items: 10, status: 'completed' },
+                { id: 'TRX008', date: '2025-01-13', cashier: 'Budi', total: 65000, items: 3, status: 'verified' }
+            ];
+
+            renderTransactions();
+            updateTransactionStats();
+        }
+
+        // Render transactions
+        function renderTransactions() {
+            const tableBody = document.getElementById('transaction-table');
+            tableBody.innerHTML = '';
+
+            transactions.forEach(transaction => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><input type="checkbox" value="${transaction.id}" onchange="updateSelectedTransactions()"></td>
+                    <td>${transaction.id}</td>
+                    <td>${transaction.date}</td>
+                    <td>${transaction.cashier}</td>
+                    <td>${formatCurrency(transaction.total)}</td>
+                    <td class="text-center">${transaction.items}</td>
+                    <td>
+                        <span class="status-badge status-${transaction.status}">
+                            ${getStatusLabel(transaction.status)}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="flex space-x-1">
+                            <button class="btn-secondary" onclick="viewTransaction('${transaction.id}')">Detail</button>
+                            ${transaction.status === 'pending' ? `
+                                <button class="btn-secondary" onclick="verifyTransaction('${transaction.id}')">Verifikasi</button>
+                            ` : ''}
+                        </div>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Get status label
+        function getStatusLabel(status) {
+            switch(status) {
+                case 'pending': return 'Pending';
+                case 'completed': return 'Selesai';
+                case 'verified': return 'Terverifikasi';
+                default: return status;
+            }
+        }
+
+        // Update transaction statistics
+        function updateTransactionStats() {
+            const total = transactions.length;
+            const pending = transactions.filter(t => t.status === 'pending').length;
+            const verified = transactions.filter(t => t.status === 'verified').length;
+            const totalValue = transactions.reduce((sum, t) => sum + t.total, 0);
+
+            document.getElementById('total-transactions').textContent = total;
+            document.getElementById('pending-transactions').textContent = pending;
+            document.getElementById('verified-transactions').textContent = verified;
+            document.getElementById('total-value').textContent = formatCurrency(totalValue);
+        }
+
+        // Load transaction chart
+        function loadTransactionChart() {
+            const chartDom = document.getElementById('transaction-chart');
+            const myChart = echarts.init(chartDom);
+
+            // Mock data for the last 7 days
+            const dates = [];
+            const transactionCounts = [];
+            const totalValues = [];
+
+            for (let i = 6; i >= 0; i--) {
+                const date = new Date();
+                date.setDate(date.getDate() - i);
+                dates.push(date.toISOString().split('T')[0]);
+                transactionCounts.push(Math.floor(Math.random() * 50) + 20);
+                totalValues.push(Math.floor(Math.random() * 5000000) + 1000000);
+            }
+
+            const option = {
+                title: {
+                    text: 'Transaksi 7 Hari Terakhir',
+                    left: 'center',
+                    textStyle: {
+                        fontSize: 14,
+                        fontWeight: 'normal'
+                    }
+                },
+                tooltip: {
+                    trigger: 'axis'
+                },
+                legend: {
+                    data: ['Jumlah Transaksi', 'Total Nilai'],
+                    bottom: 0
+                },
+                xAxis: {
+                    type: 'category',
+                    data: dates
+                },
+                yAxis: [
+                    {
+                        type: 'value',
+                        name: 'Jumlah',
+                        position: 'left'
+                    },
+                    {
+                        type: 'value',
+                        name: 'Nilai (Rp)',
+                        position: 'right'
+                    }
+                ],
+                series: [
+                    {
+                        name: 'Jumlah Transaksi',
+                        type: 'bar',
+                        data: transactionCounts,
+                        itemStyle: {
+                            color: '#FF6B35'
+                        }
+                    },
+                    {
+                        name: 'Total Nilai',
+                        type: 'line',
+                        yAxisIndex: 1,
+                        data: totalValues,
+                        itemStyle: {
+                            color: '#27AE60'
+                        }
+                    }
+                ]
+            };
+
+            myChart.setOption(option);
+        }
+
+        // Load users
+        function loadUsers() {
+            users = [
+                { id: 1, name: 'Ali', role: 'kasir', status: 'active', lastLogin: '2025-01-15 10:30', username: 'ali.kasir' },
+                { id: 2, name: 'Budi Santoso', role: 'kasir', status: 'active', lastLogin: '2025-01-15 11:15', username: 'budi.kasir' },
+                { id: 3, name: 'Citra Lestari', role: 'gudang', status: 'active', lastLogin: '2025-01-15 09:45', username: 'citra.gudang' },
+                { id: 4, name: 'Dedi Kurniawan', role: 'gudang', status: 'offline', lastLogin: '2025-01-14 16:20', username: 'dedi.gudang' },
+                { id: 5, name: 'Eva Marlina', role: 'admin', status: 'active', lastLogin: '2025-01-15 08:00', username: 'eva.admin' },
+                { id: 6, name: 'Fajar Nugraha', role: 'owner', status: 'active', lastLogin: '2025-01-14 14:30', username: 'fajar.owner' }
+            ];
+
+            renderUsers();
+        }
+
+        // Render users
+        function renderUsers() {
+            const tableBody = document.getElementById('users-table');
+            tableBody.innerHTML = '';
+
+            users.forEach(user => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${user.id}</td>
+                    <td>${user.name}</td>
+                    <td>
+                        <span class="status-badge status-${user.role === 'admin' ? 'verified' : 'completed'}">
+                            ${user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="status-badge ${user.status === 'active' ? 'status-completed' : 'status-pending'}">
+                            ${user.status === 'active' ? 'Aktif' : 'Offline'}
+                        </span>
+                    </td>
+                    <td>${user.lastLogin}</td>
+                    <td>
+                        <div class="flex space-x-1">
+                            <button class="btn-secondary" onclick="editUser(${user.id})">Edit</button>
+                            <button class="btn-secondary" onclick="resetPassword(${user.id})">Reset Password</button>
+                        </div>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Load logs
+        function loadLogs() {
+            logs = [
+                { timestamp: '2025-01-15 14:30:25', level: 'info', message: 'User Ali logged in successfully', user: 'Ali' },
+                { timestamp: '2025-01-15 14:25:10', level: 'warning', message: 'Failed login attempt for user Budi', user: 'System' },
+                { timestamp: '2025-01-15 14:20:05', level: 'info', message: 'Transaction TRX002 verified by admin', user: 'Eva' },
+                { timestamp: '2025-01-15 14:15:30', level: 'error', message: 'Database connection timeout', user: 'System' },
+                { timestamp: '2025-01-15 14:10:15', level: 'info', message: 'Stock updated for product Indomie Goreng', user: 'Citra' },
+                { timestamp: '2025-01-15 14:05:00', level: 'info', message: 'New user created: Dedi Kurniawan', user: 'Eva' },
+                { timestamp: '2025-01-15 14:00:45', level: 'warning', message: 'Low stock alert: Sabun Lifebuoy', user: 'System' }
+            ];
+
+            renderLogs();
+        }
+
+        // Render logs
+        function renderLogs() {
+            const container = document.getElementById('logs-container');
+            container.innerHTML = '';
+
+            logs.forEach(log => {
+                const logItem = document.createElement('div');
+                logItem.className = `p-4 border-b border-gray-200 hover:bg-gray-50 ${
+                    log.level === 'error' ? 'border-l-4 border-red-500' :
+                    log.level === 'warning' ? 'border-l-4 border-yellow-500' :
+                    'border-l-4 border-green-500'
+                }`;
+
+                logItem.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="font-medium text-gray-800">${log.message}</p>
+                            <p class="text-sm text-gray-600">
+                                ${log.timestamp} • ${log.user} • 
+                                <span class="font-medium ${
+                                    log.level === 'error' ? 'text-red-600' :
+                                    log.level === 'warning' ? 'text-yellow-600' :
+                                    'text-green-600'
+                                }">
+                                    ${log.level.toUpperCase()}
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+                `;
+
+                container.appendChild(logItem);
+            });
+        }
+
+        // Transaction functions
+        function viewTransaction(transactionId) {
+            const transaction = transactions.find(t => t.id === transactionId);
+            if (transaction) {
+                alert(`Detail Transaksi:\n\nID: ${transaction.id}\nTanggal: ${transaction.date}\nKasir: ${transaction.cashier}\nTotal: ${formatCurrency(transaction.total)}\nItem: ${transaction.items}\nStatus: ${getStatusLabel(transaction.status)}`);
+            }
+        }
+
+        function verifyTransaction(transactionId) {
+            const transaction = transactions.find(t => t.id === transactionId);
+            if (transaction) {
+                transaction.status = 'verified';
+                renderTransactions();
+                updateTransactionStats();
+                showNotification('Transaksi berhasil diverifikasi!', 'success');
+            }
+        }
+
+        function selectAllTransactions() {
+            const checkboxes = document.querySelectorAll('#transaction-table input[type="checkbox"]');
+            checkboxes.forEach(checkbox => checkbox.checked = true);
+            updateSelectedTransactions();
+        }
+
+        function updateSelectedTransactions() {
+            const checkboxes = document.querySelectorAll('#transaction-table input[type="checkbox"]:checked');
+            selectedTransactions = Array.from(checkboxes).map(checkbox => checkbox.value);
+        }
+
+        function toggleSelectAll() {
+            const selectAll = document.getElementById('select-all');
+            const checkboxes = document.querySelectorAll('#transaction-table input[type="checkbox"]');
+            checkboxes.forEach(checkbox => checkbox.checked = selectAll.checked);
+            updateSelectedTransactions();
+        }
+
+        function verifySelected() {
+            if (selectedTransactions.length === 0) {
+                showNotification('Pilih transaksi terlebih dahulu!', 'warning');
+                return;
+            }
+
+            selectedTransactions.forEach(id => {
+                const transaction = transactions.find(t => t.id === id);
+                if (transaction) {
+                    transaction.status = 'verified';
+                }
+            });
+
+            renderTransactions();
+            updateTransactionStats();
+            showNotification(`${selectedTransactions.length} transaksi berhasil diverifikasi!`, 'success');
+            selectedTransactions = [];
+        }
+
+        function rejectSelected() {
+            if (selectedTransactions.length === 0) {
+                showNotification('Pilih transaksi terlebih dahulu!', 'warning');
+                return;
+            }
+
+            // In real app, this would reject the transactions
+            showNotification(`${selectedTransactions.length} transaksi ditolak!`, 'error');
+            selectedTransactions = [];
+        }
+
+        function verifyAllTransactions() {
+            transactions.forEach(t => {
+                if (t.status === 'pending') {
+                    t.status = 'verified';
+                }
+            });
+            renderTransactions();
+            updateTransactionStats();
+            showNotification('Semua transaksi berhasil diverifikasi!', 'success');
+        }
+
+        function exportTransactions() {
+            const csvContent = [
+                ['ID Transaksi', 'Tanggal', 'Kasir', 'Total', 'Item', 'Status'],
+                ...transactions.map(t => [
+                    t.id, t.date, t.cashier, t.total, t.items, t.status
+                ])
+            ].map(row => row.join(',')).join('\n');
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `transaksi-${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            showNotification('Data transaksi berhasil diexport!', 'success');
+        }
+
+        // User functions
+        function showAddUserModal() {
+            const modal = document.getElementById('add-user-modal');
+            modal.classList.remove('hidden');
+            
+            anime({
+                targets: modal.querySelector('.modal-content'),
+                scale: [0.8, 1],
+                opacity: [0, 1],
+                duration: 300,
+                easing: 'easeOutCubic'
+            });
+        }
+
+        function closeAddUserModal() {
+            const modal = document.getElementById('add-user-modal');
+            modal.classList.add('hidden');
+            document.getElementById('add-user-form').reset();
+        }
+
+        function editUser(userId) {
+            const user = users.find(u => u.id === userId);
+            if (user) {
+                alert(`Edit User:\n\nNama: ${user.name}\nUsername: ${user.username}\nRole: ${user.role}\nStatus: ${user.status}`);
+            }
+        }
+
+        function resetPassword(userId) {
+            const user = users.find(u => u.id === userId);
+            if (user) {
+                if (confirm(`Reset password untuk user ${user.name}?`)) {
+                    showNotification('Password berhasil direset!', 'success');
+                }
+            }
+        }
+
+        // Report functions
+        function generateReport() {
+            const reportType = document.getElementById('report-type').value;
+            const startDate = document.getElementById('report-start-date').value;
+            const endDate = document.getElementById('report-end-date').value;
+            const format = document.getElementById('report-format').value;
+
+            showNotification(`Laporan ${reportType} berhasil digenerate!`, 'success');
+        }
+
+        function backupData() {
+            showNotification('Backup data berhasil dilakukan!', 'success');
+        }
+
+        // Utility functions
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('id-ID', {
+                style: 'currency',
+                currency: 'IDR'
+            }).format(amount);
+        }
+
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg max-w-sm ${
+                type === 'success' ? 'bg-green-500' :
+                type === 'error' ? 'bg-red-500' :
+                type === 'warning' ? 'bg-yellow-500' :
+                'bg-blue-500'
+            } text-white`;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            anime({
+                targets: notification,
+                translateX: [300, 0],
+                opacity: [0, 1],
+                duration: 300,
+                easing: 'easeOutCubic'
+            });
+            
+            setTimeout(() => {
+                anime({
+                    targets: notification,
+                    translateX: 300,
+                    opacity: 0,
+                    duration: 300,
+                    easing: 'easeInCubic',
+                    complete: () => {
+                        document.body.removeChild(notification);
+                    }
+                });
+            }, 3000);
+        }
+
+        function initializeForm() {
+            const form = document.getElementById('add-user-form');
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const name = document.getElementById('user-name').value;
+                const username = document.getElementById('user-username').value;
+                const password = document.getElementById('user-password').value;
+                const role = document.getElementById('user-role').value;
+
+                if (!name || !username || !password || !role) {
+                    showNotification('Mohon lengkapi semua field!', 'warning');
+                    return;
+                }
+
+                // Add new user
+                const newUser = {
+                    id: users.length + 1,
+                    name: name,
+                    username: username,
+                    role: role,
+                    status: 'active',
+                    lastLogin: 'Belum pernah login'
+                };
+
+                users.push(newUser);
+                renderUsers();
+                closeAddUserModal();
+                showNotification('User berhasil ditambahkan!', 'success');
+            });
+        }
+    </script>
+</body>
+</html>

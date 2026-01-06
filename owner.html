@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Owner - RetailSIM</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.0/echarts.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="dark-mode.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-orange: #FF6B35;
+            --secondary-coral: #FF8E53;
+            --accent-gold: #FFB366;
+            --deep-charcoal: #2C3E50;
+            --medium-gray: #7F8C8D;
+            --light-gray: #ECF0F1;
+            --success-green: #27AE60;
+            --warning-amber: #F39C12;
+            --error-red: #E74C3C;
+            --info-blue: #3498DB;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            min-height: 100vh;
+        }
+        
+        .navbar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+        
+        .dashboard-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .dashboard-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+        
+        .kpi-card {
+            background: linear-gradient(135deg, var(--primary-orange) 0%, var(--secondary-coral) 100%);
+            color: white;
+            border-radius: 16px;
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .kpi-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100px;
+            height: 100px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            transform: translate(30px, -30px);
+        }
+        
+        .kpi-value {
+            font-family: 'Poppins', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .kpi-label {
+            font-size: 0.875rem;
+            opacity: 0.9;
+        }
+        
+        .chart-container {
+            height: 400px;
+            width: 100%;
+        }
+        
+        .chart-container-small {
+            height: 250px;
+            width: 100%;
+        }
+        
+        .recommendation-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-left: 4px solid var(--warning-amber);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .alert-card {
+            background: linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%);
+            border-left: 4px solid var(--error-red);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .success-card {
+            background: linear-gradient(135deg, #f0fff4 0%, #c6f6d5 100%);
+            border-left: 4px solid var(--success-green);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .role-badge {
+            background: linear-gradient(135deg, var(--primary-orange) 0%, var(--secondary-coral) 100%);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+        
+        .date-picker {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 0.75rem;
+            transition: all 0.3s ease;
+        }
+        
+        .date-picker:focus {
+            outline: none;
+            border-color: var(--primary-orange);
+            box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-orange) 0%, var(--secondary-coral) 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(255, 107, 53, 0.3);
+        }
+        
+        .btn-secondary {
+            background: white;
+            color: var(--primary-orange);
+            border: 2px solid var(--primary-orange);
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.875rem;
+        }
+        
+        .btn-secondary:hover {
+            background: var(--primary-orange);
+            color: white;
+        }
+        
+        .performance-indicator {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .performance-up {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .performance-down {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .performance-stable {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .product-performance-item {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            padding: 1rem;
+            background: white;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            border-left: 4px solid var(--info-blue);
+        }
+        
+        .restock-item {
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+            border-left: 4px solid var(--warning-amber);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        @media (max-width: 768px) {
+            .kpi-value {
+                font-size: 2rem;
+            }
+            
+            .chart-container {
+                height: 300px;
+            }
+            
+            .dashboard-card {
+                margin: 1rem;
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar fixed top-0 left-0 right-0 z-50 px-6 py-4">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <a href="index.html" class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center">
+                        <span class="text-white font-bold text-lg">SI</span>
+                    </div>
+                    <span class="text-xl font-semibold text-gray-800">RetailSIM</span>
+                </a>
+            </div>
+            
+            <div class="flex items-center space-x-6">
+                <div class="role-badge">Owner</div>
+                <div class="text-sm text-gray-600">
+                    <span class="font-medium">Alif</span>
+                    <div class="text-xs">Aktif</div>
+                </div>
+                <button class="dark-mode-toggle" onclick="toggleDarkMode()" id="dark-mode-toggle">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" id="toggle-icon">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                    </svg>
+                </button>
+                <a href="index.html" class="text-gray-600 hover:text-orange-500 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="pt-24 px-6 pb-6">
+        <div class="max-w-7xl mx-auto">
+            <!-- Header -->
+            <div class="mb-8">
+                <h1 class="text-3xl font-bold text-gray-800 mb-2">Dashboard Owner</h1>
+                <p class="text-gray-600">Dashboard Visualisasi Data untuk monitoring dan pengambilan keputusan</p>
+            </div>
+
+            <!-- Date Range Selector -->
+            <div class="bg-white rounded-lg p-4 mb-8 shadow-sm">
+                <div class="flex flex-wrap items-center gap-4">
+                    <div class="flex items-center space-x-2">
+                        <label class="text-sm font-medium text-gray-700">Periode:</label>
+                        <input type="date" id="start-date" class="date-picker" value="2025-01-01">
+                        <span class="text-gray-500">sampai</span>
+                        <input type="date" id="end-date" class="date-picker" value="2025-01-15">
+                    </div>
+                    <button class="btn-primary" onclick="updateDashboard()">Update Dashboard</button>
+                    <button class="btn-secondary" onclick="exportDashboard()">Export Data</button>
+                </div>
+            </div>
+
+            <!-- KPI Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div class="kpi-card">
+                    <div class="kpi-value" id="total-revenue">Rp 0</div>
+                    <div class="kpi-label">Total Pendapatan</div>
+                    <div class="performance-indicator performance-up mt-2">+12.5% dari bulan lalu</div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-value" id="total-transactions">0</div>
+                    <div class="kpi-label">Total Transaksi</div>
+                    <div class="performance-indicator performance-up mt-2">+8.3% dari bulan lalu</div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-value" id="avg-transaction">Rp 0</div>
+                    <div class="kpi-label">Rata-rata Transaksi</div>
+                    <div class="performance-indicator performance-stable mt-2">+1.2% dari bulan lalu</div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-value" id="profit-margin">0%</div>
+                    <div class="kpi-label">Margin Laba</div>
+                    <div class="performance-indicator performance-down mt-2">-2.1% dari bulan lalu</div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Main Charts -->
+                <div class="lg:col-span-2 space-y-8">
+                    <!-- Sales Performance Chart -->
+                    <div class="dashboard-card p-6">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-xl font-semibold text-gray-800">Performa Penjualan</h3>
+                            <select id="sales-period" class="date-picker w-32" onchange="updateSalesChart()">
+                                <option value="7">7 Hari</option>
+                                <option value="30" selected>30 Hari</option>
+                                <option value="90">90 Hari</option>
+                            </select>
+                        </div>
+                        <div id="sales-chart" class="chart-container"></div>
+                    </div>
+
+                    <!-- Revenue vs Profit Chart -->
+                    <div class="dashboard-card p-6">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-6">Pendapatan vs Laba</h3>
+                        <div id="revenue-profit-chart" class="chart-container"></div>
+                    </div>
+
+                    <!-- Category Performance -->
+                    <div class="dashboard-card p-6">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-6">Performa Kategori Produk</h3>
+                        <div id="category-chart" class="chart-container"></div>
+                    </div>
+                </div>
+
+                <!-- Side Panel -->
+                <div class="lg:col-span-1 space-y-8">
+                    <!-- Restock Recommendations -->
+                    <div class="dashboard-card p-6">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-6">Rekomendasi Restock</h3>
+                        <div id="restock-recommendations" class="space-y-3 max-h-80 overflow-y-auto">
+                            <!-- Recommendations will be loaded here -->
+                        </div>
+                    </div>
+
+                    <!-- Top Products -->
+                    <div class="dashboard-card p-6">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-6">Produk Terlaris</h3>
+                        <div id="top-products" class="space-y-3">
+                            <!-- Top products will be loaded here -->
+                        </div>
+                    </div>
+
+                    <!-- Alerts -->
+                    <div class="dashboard-card p-6">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-6">Peringatan & Notifikasi</h3>
+                        <div id="alerts-container" class="space-y-3">
+                            <!-- Alerts will be loaded here -->
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="dashboard-card p-6">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-6">Tindakan Cepat</h3>
+                        <div class="space-y-3">
+                            <button class="btn-primary w-full" onclick="generateFullReport()">
+                                Generate Full Report
+                            </button>
+                            <button class="btn-secondary w-full" onclick="downloadFinancialData()">
+                                Download Financial Data
+                            </button>
+                            <button class="btn-secondary w-full" onclick="scheduleReport()">
+                                Schedule Weekly Report
+                            </button>
+                            <button class="btn-secondary w-full" onclick="comparePerformance()">
+                                Compare Performance
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Inventory Overview -->
+            <div class="dashboard-card p-6 mt-8">
+                <h3 class="text-xl font-semibold text-gray-800 mb-6">Overview Inventori</h3>
+                <div id="inventory-overview-chart" class="chart-container"></div>
+            </div>
+
+            <!-- Financial Summary -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+                <div class="dashboard-card p-6">
+                    <h4 class="text-lg font-semibold text-gray-800 mb-4">Revenue Breakdown</h4>
+                    <div id="revenue-breakdown-chart" class="chart-container-small"></div>
+                </div>
+
+                <div class="dashboard-card p-6">
+                    <h4 class="text-lg font-semibold text-gray-800 mb-4">Cost Analysis</h4>
+                    <div id="cost-analysis-chart" class="chart-container-small"></div>
+                </div>
+
+                <div class="dashboard-card p-6">
+                    <h4 class="text-lg font-semibold text-gray-800 mb-4">Growth Metrics</h4>
+                    <div id="growth-metrics-chart" class="chart-container-small"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Owner Dashboard JavaScript
+        let dashboardData = {};
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeDashboard();
+            loadAllCharts();
+            loadRecommendations();
+            loadTopProducts();
+            loadAlerts();
+        });
+
+        // Initialize dashboard
+        function initializeDashboard() {
+            // Mock data
+            dashboardData = {
+                totalRevenue: 28500000,
+                totalTransactions: 1247,
+                avgTransaction: 22800,
+                profitMargin: 18.5,
+                salesData: [
+                    { date: '2025-01-01', sales: 2500000, profit: 450000 },
+                    { date: '2025-01-02', sales: 3200000, profit: 580000 },
+                    { date: '2025-01-03', sales: 2800000, profit: 510000 },
+                    { date: '2025-01-04', sales: 4100000, profit: 750000 },
+                    { date: '2025-01-05', sales: 3900000, profit: 700000 },
+                    { date: '2025-01-06', sales: 4500000, profit: 820000 },
+                    { date: '2025-01-07', sales: 3800000, profit: 680000 },
+                    { date: '2025-01-08', sales: 4200000, profit: 760000 },
+                    { date: '2025-01-09', sales: 3600000, profit: 650000 },
+                    { date: '2025-01-10', sales: 4800000, profit: 870000 },
+                    { date: '2025-01-11', sales: 5200000, profit: 950000 },
+                    { date: '2025-01-12', sales: 4600000, profit: 830000 },
+                    { date: '2025-01-13', sales: 5400000, profit: 980000 },
+                    { date: '2025-01-14', sales: 4900000, profit: 880000 },
+                    { date: '2025-01-15', sales: 5600000, profit: 1010000 }
+                ],
+                categoryData: [
+                    { name: 'Makanan', value: 35, sales: 12000000 },
+                    { name: 'Minuman', value: 25, sales: 8500000 },
+                    { name: 'Kebersihan', value: 20, sales: 6800000 },
+                    { name: 'Sembako', value: 15, sales: 5100000 },
+                    { name: 'Lainnya', value: 5, sales: 1700000 }
+                ],
+                restockItems: [
+                    { name: 'Sabun Lifebuoy', currentStock: 15, minStock: 25, recommendedOrder: 50 },
+                    { name: 'Roti Tawar', currentStock: 8, minStock: 15, recommendedOrder: 30 },
+                    { name: 'Minyak Goreng 1L', currentStock: 5, minStock: 20, recommendedOrder: 40 },
+                    { name: 'Shampoo Sunsilk', currentStock: 12, minStock: 20, recommendedOrder: 35 }
+                ],
+                topProducts: [
+                    { name: 'Indomie Goreng', sales: 150, revenue: 525000 },
+                    { name: 'Teh Botol Sosro', sales: 200, revenue: 1000000 },
+                    { name: 'Beras 5kg', sales: 40, revenue: 1800000 },
+                    { name: 'Gula 1kg', sales: 120, revenue: 1440000 },
+                    { name: 'Detergen Rinso', sales: 50, revenue: 1250000 }
+                ]
+            };
+
+            updateKPICards();
+        }
+
+        // Update KPI cards
+        function updateKPICards() {
+            document.getElementById('total-revenue').textContent = formatCurrency(dashboardData.totalRevenue);
+            document.getElementById('total-transactions').textContent = dashboardData.totalTransactions.toLocaleString();
+            document.getElementById('avg-transaction').textContent = formatCurrency(dashboardData.avgTransaction);
+            document.getElementById('profit-margin').textContent = dashboardData.profitMargin + '%';
+        }
+
+        // Load all charts
+        function loadAllCharts() {
+            loadSalesChart();
+            loadRevenueProfitChart();
+            loadCategoryChart();
+            loadInventoryOverviewChart();
+            loadRevenueBreakdownChart();
+            loadCostAnalysisChart();
+            loadGrowthMetricsChart();
+        }
+
+        // Sales Chart
+        function loadSalesChart() {
+            const chartDom = document.getElementById('sales-chart');
+            const myChart = echarts.init(chartDom);
+
+            const dates = dashboardData.salesData.map(d => d.date);
+            const sales = dashboardData.salesData.map(d => d.sales);
+
+            const option = {
+                title: {
+                    text: 'Penjualan Harian',
+                    left: 'center',
+                    textStyle: {
+                        fontSize: 14,
+                        fontWeight: 'normal'
+                    }
+                },
+                tooltip: {
+                    trigger: 'axis',
+                    formatter: function(params) {
+                        return `${params[0].axisValue}<br/>Penjualan: ${formatCurrency(params[0].value)}`;
+                    }
+                },
+                xAxis: {
+                    type: 'category',
+                    data: dates,
+                    axisLabel: {
+                        formatter: function(value) {
+                            return new Date(value).toLocaleDateString('id-ID', { month: 'short', day: 'numeric' });
+                        }
+                    }
+                },
+                yAxis: {
+                    type: 'value',
+                    axisLabel: {
+                        formatter: function(value) {
+                            return formatCurrency(value);
+                        }
+                    }
+                },
+                series: [{
+                    data: sales,
+                    type: 'line',
+                    smooth: true,
+                    itemStyle: {
+                        color: '#FF6B35'
+                    },
+                    areaStyle: {
+                        color: {
+                            type: 'linear',
+                            x: 0,
+                            y: 0,
+                            x2: 0,
+                            y2: 1,
+                            colorStops: [{
+                                offset: 0, color: 'rgba(255, 107, 53, 0.3)'
+                            }, {
+                                offset: 1, color: 'rgba(255, 107, 53, 0.1)'
+                            }]
+                        }
+                    }
+                }]
+            };
+
+            myChart.setOption(option);
+        }
+
+        // Revenue vs Profit Chart
+        function loadRevenueProfitChart() {
+            const chartDom = document.getElementById('revenue-profit-chart');
+            const myChart = echarts.init(chartDom);
+
+            const dates = dashboardData.salesData.map(d => d.date);
+            const revenues = dashboardData.salesData.map(d => d.sales);
+            const profits = dashboardData.salesData.map(d => d.profit);
+
+            const option = {
+                title: {
+                    text: 'Pendapatan vs Laba',
+                    left: 'center',
+                    textStyle: {
+                        fontSize: 14,
+                        fontWeight: 'normal'
+                    }
+                },
+                tooltip: {
+                    trigger: 'axis'
+                },
+                legend: {
+                    data: ['Pendapatan', 'Laba'],
+                    bottom: 0
+                },
+                xAxis: {
+                    type: 'category',
+                    data: dates
+                },
+                yAxis: {
+                    type: 'value',
+                    axisLabel: {
+                        formatter: function(value) {
+                            return formatCurrency(value);
+                        }
+                    }
+                },
+                series: [
+                    {
+                        name: 'Pendapatan',
+                        type: 'bar',
+                        data: revenues,
+                        itemStyle: {
+                            color: '#FF6B35'
+                        }
+                    },
+                    {
+                        name: 'Laba',
+                        type: 'line',
+                        data: profits,
+                        itemStyle: {
+                            color: '#27AE60'
+                        }
+                    }
+                ]
+            };
+
+            myChart.setOption(option);
+        }
+
+        // Category Chart
+        function loadCategoryChart() {
+            const chartDom = document.getElementById('category-chart');
+            const myChart = echarts.init(chartDom);
+
+            const data = dashboardData.categoryData;
+
+            const option = {
+                title: {
+                    text: 'Penjualan per Kategori',
+                    left: 'center',
+                    textStyle: {
+                        fontSize: 14,
+                        fontWeight: 'normal'
+                    }
+                },
+                tooltip: {
+                    trigger: 'item',
+                    formatter: '{a} <br/>{b}: {c} ({d}%)'
+                },
+                series: [{
+                    name: 'Kategori',
+                    type: 'pie',
+                    radius: '70%',
+                    center: ['50%', '60%'],
+                    data: data.map(item => ({
+                        value: item.value,
+                        name: item.name
+                    })),
+                    emphasis: {
+                        itemStyle: {
+                            shadowBlur: 10,
+                            shadowOffsetX: 0,
+                            shadowColor: 'rgba(0, 0, 0, 0.5)'
+                        }
+                    },
+                    itemStyle: {
+                        color: function(params) {
+                            const colors = ['#FF6B35', '#FF8E53', '#FFB366', '#3498DB', '#9B59B6'];
+                            return colors[params.dataIndex];
+                        }
+                    }
+                }]
+            };
+
+            myChart.setOption(option);
+        }
+
+        // Inventory Overview Chart
+        function loadInventoryOverviewChart() {
+            const chartDom = document.getElementById('inventory-overview-chart');
+            const myChart = echarts.init(chartDom);
+
+            const inventoryData = [
+                { name: 'Stok Aman', value: 6 },
+                { name: 'Stok Menengah', value: 2 },
+                { name: 'Stok Rendah', value: 2 }
+            ];
+
+            const option = {
+                title: {
+                    text: 'Status Inventori',
+                    left: 'center',
+                    textStyle: {
+                        fontSize: 14,
+                        fontWeight: 'normal'
+                    }
+                },
+                tooltip: {
+                    trigger: 'item'
+                },
+                xAxis: {
+                    type: 'category',
+                    data: ['Produk Aman', 'Perlu Perhatian', 'Kritis']
+                },
+                yAxis: {
+                    type: 'value'
+                },
+                series: [{
+                    data: [
+                        { value: 6, itemStyle: { color: '#27AE60' } },
+                        { value: 2, itemStyle: { color: '#F39C12' } },
+                        { value: 2, itemStyle: { color: '#E74C3C' } }
+                    ],
+                    type: 'bar',
+                    barWidth: '60%'
+                }]
+            };
+
+            myChart.setOption(option);
+        }
+
+        // Revenue Breakdown Chart
+        function loadRevenueBreakdownChart() {
+            const chartDom = document.getElementById('revenue-breakdown-chart');
+            const myChart = echarts.init(chartDom);
+
+            const option = {
+                title: {
+                    text: 'Pendapatan',
+                    left: 'center',
+                    textStyle: {
+                        fontSize: 12,
+                        fontWeight: 'normal'
+                    }
+                },
+                tooltip: {
+                    trigger: 'item'
+                },
+                series: [{
+                    type: 'pie',
+                    radius: '60%',
+                    center: ['50%', '60%'],
+                    data: [
+                        { value: 70, name: 'Penjualan' },
+                        { value: 30, name: 'Lainnya' }
+                    ],
+                    itemStyle: {
+                        color: function(params) {
+                            return params.dataIndex === 0 ? '#FF6B35' : '#FFB366';
+                        }
+                    }
+                }]
+            };
+
+            myChart.setOption(option);
+        }
+
+        // Cost Analysis Chart
+        function loadCostAnalysisChart() {
+            const chartDom = document.getElementById('cost-analysis-chart');
+            const myChart = echarts.init(chartDom);
+
+            const option = {
+                title: {
+                    text: 'Biaya',
+                    left: 'center',
+                    textStyle: {
+                        fontSize: 12,
+                        fontWeight: 'normal'
+                    }
+                },
+                tooltip: {
+                    trigger: 'item'
+                },
+                series: [{
+                    type: 'pie',
+                    radius: '60%',
+                    center: ['50%', '60%'],
+                    data: [
+                        { value: 60, name: 'COGS' },
+                        { value: 25, name: 'Operasional' },
+                        { value: 15, name: 'Lainnya' }
+                    ],
+                    itemStyle: {
+                        color: function(params) {
+                            const colors = ['#E74C3C', '#F39C12', '#95A5A6'];
+                            return colors[params.dataIndex];
+                        }
+                    }
+                }]
+            };
+
+            myChart.setOption(option);
+        }
+
+        // Growth Metrics Chart
+        function loadGrowthMetricsChart() {
+            const chartDom = document.getElementById('growth-metrics-chart');
+            const myChart = echarts.init(chartDom);
+
+            const option = {
+                title: {
+                    text: 'Pertumbuhan',
+                    left: 'center',
+                    textStyle: {
+                        fontSize: 12,
+                        fontWeight: 'normal'
+                    }
+                },
+                tooltip: {
+                    trigger: 'axis'
+                },
+                xAxis: {
+                    type: 'category',
+                    data: ['Bln Lalu', 'Bln Ini']
+                },
+                yAxis: {
+                    type: 'value',
+                    axisLabel: {
+                        formatter: '{value}%'
+                    }
+                },
+                series: [{
+                    data: [15, 18.5],
+                    type: 'bar',
+                    itemStyle: {
+                        color: '#27AE60'
+                    }
+                }]
+            };
+
+            myChart.setOption(option);
+        }
+
+        // Load recommendations
+        function loadRecommendations() {
+            const container = document.getElementById('restock-recommendations');
+            
+            container.innerHTML = dashboardData.restockItems.map(item => `
+                <div class="restock-item">
+                    <div class="flex justify-between items-start mb-2">
+                        <h5 class="font-semibold text-gray-800 text-sm">${item.name}</h5>
+                        <span class="performance-indicator performance-down">Rendah</span>
+                    </div>
+                    <div class="text-xs text-gray-600 mb-2">
+                        Stok: ${item.currentStock} unit | Minimal: ${item.minStock} unit
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs text-gray-700">Rekomendasi:</span>
+                        <span class="font-semibold text-orange-600 text-sm">${item.recommendedOrder} unit</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Load top products
+        function loadTopProducts() {
+            const container = document.getElementById('top-products');
+            
+            container.innerHTML = dashboardData.topProducts.map((product, index) => `
+                <div class="product-performance-item">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
+                            <span class="text-orange-600 font-bold text-sm">${index + 1}</span>
+                        </div>
+                        <div>
+                            <h5 class="font-semibold text-gray-800 text-sm">${product.name}</h5>
+                            <p class="text-xs text-gray-600">${product.sales} unit terjual</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="font-semibold text-gray-800 text-sm">${formatCurrency(product.revenue)}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Load alerts
+        function loadAlerts() {
+            const container = document.getElementById('alerts-container');
+            
+            const alerts = [
+                { type: 'warning', title: 'Stok Rendah', message: '3 produk memerlukan restock segera' },
+                { type: 'error', title: 'Keamanan', message: 'Login gagal terdeteksi untuk user Budi' },
+                { type: 'success', title: 'Pencapaian', message: 'Target bulanan telah tercapai 85%' }
+            ];
+
+            container.innerHTML = alerts.map(alert => {
+                const cardClass = alert.type === 'warning' ? 'alert-card' :
+                                 alert.type === 'error' ? 'alert-card' : 'success-card';
+                const iconClass = alert.type === 'warning' ? 'text-yellow-600' :
+                                 alert.type === 'error' ? 'text-red-600' : 'text-green-600';
+                
+                return `
+                    <div class="${cardClass}">
+                        <div class="flex items-start space-x-3">
+                            <svg class="w-5 h-5 ${iconClass} mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                ${alert.type === 'warning' ? 
+                                    '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>' :
+                                  alert.type === 'error' ?
+                                    '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>' :
+                                    '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>'
+                                }
+                            </svg>
+                            <div>
+                                <h5 class="font-semibold text-gray-800 text-sm">${alert.title}</h5>
+                                <p class="text-xs text-gray-600">${alert.message}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Update dashboard
+        function updateDashboard() {
+            const startDate = document.getElementById('start-date').value;
+            const endDate = document.getElementById('end-date').value;
+            
+            showNotification(`Dashboard diupdate untuk periode ${startDate} sampai ${endDate}`, 'success');
+            
+            // In real app, this would fetch new data based on date range
+            loadAllCharts();
+        }
+
+        // Export functions
+        function exportDashboard() {
+            showNotification('Data dashboard berhasil diexport!', 'success');
+        }
+
+        function generateFullReport() {
+            showNotification('Full report sedang diproses...', 'info');
+            setTimeout(() => {
+                showNotification('Full report berhasil digenerate!', 'success');
+            }, 2000);
+        }
+
+        function downloadFinancialData() {
+            showNotification('Data financial berhasil didownload!', 'success');
+        }
+
+        function scheduleReport() {
+            showNotification('Laporan mingguan berhasil dijadwalkan!', 'success');
+        }
+
+        function comparePerformance() {
+            showNotification('Perbandingan performa sedang diproses...', 'info');
+        }
+
+        // Update sales chart based on period
+        function updateSalesChart() {
+            const period = document.getElementById('sales-period').value;
+            showNotification(`Chart diupdate untuk periode ${period} hari`, 'info');
+            loadSalesChart();
+        }
+
+        // Utility functions
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('id-ID', {
+                style: 'currency',
+                currency: 'IDR',
+                minimumFractionDigits: 0
+            }).format(amount);
+        }
+
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg max-w-sm ${
+                type === 'success' ? 'bg-green-500' :
+                type === 'error' ? 'bg-red-500' :
+                type === 'warning' ? 'bg-yellow-500' :
+                'bg-blue-500'
+            } text-white`;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            anime({
+                targets: notification,
+                translateX: [300, 0],
+                opacity: [0, 1],
+                duration: 300,
+                easing: 'easeOutCubic'
+            });
+            
+            setTimeout(() => {
+                anime({
+                    targets: notification,
+                    translateX: 300,
+                    opacity: 0,
+                    duration: 300,
+                    easing: 'easeInCubic',
+                    complete: () => {
+                        document.body.removeChild(notification);
+                    }
+                });
+            
